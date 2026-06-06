@@ -1,6 +1,6 @@
 using Microsoft.Data.Sqlite;
 
-namespace BancoArboleda.Data;
+namespace BancoArboleda.Backend.Data;
 
 public class DatabaseContext
 {

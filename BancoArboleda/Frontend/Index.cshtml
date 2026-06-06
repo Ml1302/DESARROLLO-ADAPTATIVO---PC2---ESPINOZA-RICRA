@@ -1,5 +1,5 @@
 @page
-@model BancoArboleda.Pages.IndexModel
+@model BancoArboleda.Frontend.IndexModel
 @{
     ViewData["Title"] = "Inicio";
 }
@@ -13,32 +13,43 @@
     <div class="card">
         <div class="card__title">¿Qué deseas hacer hoy?</div>
         <div class="option-grid">
+
+            <!--  HU-01: Opción 1 — ACTIVA -->
             <a href="/Recarga/Paso1" class="option-card" id="btn-recarga">
                 <div class="option-card__icon">📱</div>
                 <div class="option-card__body">
-                    <h3>Recargar Celular</h3>
+                    <h3>Recarga Celular</h3>
                     <p>Recarga tu saldo móvil al instante</p>
                 </div>
                 <span class="option-card__arrow">›</span>
             </a>
 
-            <a href="/Historial" class="option-card" id="btn-historial">
-                <div class="option-card__icon">📋</div>
+            <!--  HU-01: Opción 2 — DESHABILITADA (Próximamente) -->
+            <div class="option-card option-card--disabled"
+                 id="btn-pago-servicio"
+                 aria-disabled="true"
+                 title="Próximamente disponible">
+                <div class="option-card__icon">💡</div>
                 <div class="option-card__body">
-                    <h3>Ver Historial</h3>
-                    <p>Últimas 10 transacciones realizadas</p>
+                    <h3>Pago de Servicio</h3>
+                    <p>Luz, agua, gas y más</p>
                 </div>
-                <span class="option-card__arrow">›</span>
-            </a>
-
-            <div class="option-card" id="btn-saldo" style="opacity:.55; cursor:not-allowed;">
-                <div class="option-card__icon">💰</div>
-                <div class="option-card__body">
-                    <h3>Consultar Saldo</h3>
-                    <p>Próximamente disponible</p>
-                </div>
-                <span class="option-card__arrow">›</span>
+                <span class="badge badge-pronto">Próximamente</span>
             </div>
+
+            <!--  HU-01: Opción 3 — DESHABILITADA (Próximamente) -->
+            <div class="option-card option-card--disabled"
+                 id="btn-transferencia"
+                 aria-disabled="true"
+                 title="Próximamente disponible">
+                <div class="option-card__icon">🔄</div>
+                <div class="option-card__body">
+                    <h3>Transferencia entre mis cuentas</h3>
+                    <p>Mueve dinero entre tus cuentas</p>
+                </div>
+                <span class="badge badge-pronto">Próximamente</span>
+            </div>
+
         </div>
     </div>
 

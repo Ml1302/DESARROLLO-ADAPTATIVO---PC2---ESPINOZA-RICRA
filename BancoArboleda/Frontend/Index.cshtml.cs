@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace BancoArboleda.Pages;
+namespace BancoArboleda.Frontend;
 
 public class IndexModel : PageModel
 {

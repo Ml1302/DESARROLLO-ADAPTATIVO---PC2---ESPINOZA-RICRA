@@ -1,7 +1,7 @@
 using Dapper;
-using BancoArboleda.Models;
+using BancoArboleda.Backend.Models;
 
-namespace BancoArboleda.Data;
+namespace BancoArboleda.Backend.Data;
 
 public class DbSeeder
 {
@@ -62,13 +62,13 @@ public class DbSeeder
                       VALUES (@id, @numero_celular, @operador_id, @operador_nombre, @monto, @fecha, @estado)",
                     new
                     {
-                        id             = Guid.NewGuid().ToString(),
-                        numero_celular = ej.celular,
-                        operador_id    = op.Id,
+                        id              = Guid.NewGuid().ToString(),
+                        numero_celular  = ej.celular,
+                        operador_id     = op.Id,
                         operador_nombre = op.Nombre,
-                        monto          = ej.monto,
-                        fecha          = fecha,
-                        estado         = "simulado"
+                        monto           = ej.monto,
+                        fecha           = fecha,
+                        estado          = "simulado"
                     });
             }
         }

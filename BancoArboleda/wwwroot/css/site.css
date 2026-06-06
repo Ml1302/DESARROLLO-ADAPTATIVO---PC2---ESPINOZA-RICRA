@@ -539,6 +539,23 @@ select.form-control { background-image: url("data:image/svg+xml,%3Csvg xmlns='ht
     color: var(--color-success);
 }
 
+/* HU-01: Tarjetas deshabilitadas */
+.option-card--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+    user-select: none;
+}
+
+.badge-pronto {
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffcc80;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
 /* ── Historial Table ── */
 .table-wrapper {
     overflow-x: auto;
@@ -593,20 +610,105 @@ table.data-table .td-fecha {
     white-space: nowrap;
 }
 
-/* ── Clave PIN visual ── */
-.pin-hint {
+/* ── PIN Cajas individuales (Paso 3) ── */
+.pin-boxes {
     display: flex;
     justify-content: center;
-    gap: .5rem;
-    margin-top: .75rem;
+    gap: .65rem;
+    margin: .75rem 0 .5rem;
+    cursor: text;
 }
 
-.pin-dot {
-    width: 12px; height: 12px;
-    border-radius: 50%;
+.pin-box {
+    width: 44px; height: 52px;
     border: 2px solid var(--color-border);
-    background: transparent;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    background: var(--color-surface-2);
     transition: var(--transition);
+    user-select: none;
+}
+
+.pin-box--active {
+    border-color: var(--color-primary);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 3px rgba(26,107,60,.15);
+    color: var(--color-primary);
+}
+
+.pin-box--filled {
+    border-color: var(--color-primary);
+    background: var(--color-accent-soft);
+    color: var(--color-primary-dark);
+}
+
+/* Input real oculto (captura el teclado) */
+.pin-input-hidden {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 1px; height: 1px;
+    top: -9999px;
+}
+
+.pin-counter {
+    text-align: center;
+    font-size: .8rem;
+    color: var(--color-text-muted);
+    margin-top: .35rem;
+}
+
+/* Hint de simulación */
+.pin-sim-hint {
+    margin-top: .85rem;
+    background: #fffde7;
+    border: 1px solid #f9a825;
+    border-radius: 6px;
+    padding: .55rem .9rem;
+    font-size: .8rem;
+    color: #5d4037;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+}
+
+.pin-sim-hint code {
+    background: #f5f5f5;
+    padding: .1rem .4rem;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: .15rem;
+}
+
+.btn-hint-use {
+    background: #f9a825;
+    border: none;
+    border-radius: 4px;
+    padding: .2rem .6rem;
+    font-size: .75rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #3e2723;
+    transition: var(--transition);
+}
+
+.btn-hint-use:hover { background: #f57f17; color: #fff; }
+
+/* Botón deshabilitado */
+.btn-primary:disabled {
+    background: #b0bec5;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+    opacity: .75;
 }
 
 /* ── Info box ── */
@@ -659,4 +761,123 @@ table.data-table .td-fecha {
     .monto-grid { grid-template-columns: repeat(2, 1fr); }
     .site-logo__tag { display: none; }
     .site-nav a { padding: .4rem .6rem; font-size: .8rem; }
+}
+
+/* =============================================
+   Procesando / Exito Overlay
+   ============================================= */
+.processing-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 40, 22, 0.96); /* Very deep forest green */
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    color: #ffffff;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+}
+
+.processing-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.spinner-ring {
+    width: 68px;
+    height: 68px;
+    border: 5px solid rgba(255, 255, 255, 0.15);
+    border-top: 5px solid var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+    margin-bottom: 1.5rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Success Checkmark Animation (SVG) */
+.success-checkmark-wrapper {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1.5rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkmark-svg {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 4;
+    stroke: var(--color-accent);
+    stroke-miterlimit: 10;
+    animation: scale-checkmark .3s ease-in-out both;
+}
+
+.checkmark-circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 4;
+    stroke-miterlimit: 10;
+    stroke: var(--color-accent);
+    fill: none;
+    animation: stroke-circle 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark-check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    stroke: var(--color-accent);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation: stroke-check 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+}
+
+@keyframes stroke-circle {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes stroke-check {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes scale-checkmark {
+    0%, 100% {
+        transform: none;
+    }
+    50% {
+        transform: scale3d(1.1, 1.1, 1);
+    }
+}
+
+.processing-text {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.3px;
+    text-align: center;
+}
+
+.processing-subtext {
+    font-size: 0.95rem;
+    opacity: 0.8;
+    text-align: center;
 }

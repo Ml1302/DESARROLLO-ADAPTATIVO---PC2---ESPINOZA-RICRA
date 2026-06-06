@@ -1,4 +1,4 @@
-namespace BancoArboleda.Models;
+namespace BancoArboleda.Backend.Models;
 
 public class Transaccion
 {

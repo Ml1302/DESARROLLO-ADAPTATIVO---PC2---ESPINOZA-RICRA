@@ -1,5 +1,5 @@
 @page
-@model BancoArboleda.Pages.HistorialModel
+@model BancoArboleda.Frontend.HistorialModel
 @{
     ViewData["Title"] = "Historial de Transacciones";
 }
@@ -44,7 +44,7 @@
                         <th>Operador</th>
                         <th>Número</th>
                         <th>Monto</th>
-                        <th>Estado</th>
+                        <th>Resultado</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,7 +58,14 @@
                             <td>@tx.NumeroCelular</td>
                             <td class="td-monto">S/ @tx.Monto.ToString("F2")</td>
                             <td>
-                                <span class="badge badge-success">@tx.Estado</span>
+                                @if (tx.Estado == "simulado")
+                                {
+                                    <span class="badge badge-success">✓ Exitosa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-success">@tx.Estado</span>
+                                }
                             </td>
                         </tr>
                     }

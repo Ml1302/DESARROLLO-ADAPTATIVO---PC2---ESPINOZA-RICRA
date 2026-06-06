@@ -1,0 +1,258 @@
+@page
+@model BancoArboleda.Frontend.Recarga.Paso3Model
+@{
+    ViewData["Title"] = "Recarga – Paso 3";
+}
+
+<div class="page-wrapper">
+    <!-- Indicador de pasos -->
+    <div class="step-indicator" style="gap:.5rem;">
+        <div class="step-indicator__item done">
+            <div class="step-indicator__dot">✓</div>
+            <div class="step-indicator__label">Destino</div>
+        </div>
+        <div class="step-connector done"></div>
+        <div class="step-indicator__item done">
+            <div class="step-indicator__dot">✓</div>
+            <div class="step-indicator__label">Monto</div>
+        </div>
+        <div class="step-connector done"></div>
+        <div class="step-indicator__item active">
+            <div class="step-indicator__dot">3</div>
+            <div class="step-indicator__label">Clave</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-indicator__item">
+            <div class="step-indicator__dot">✓</div>
+            <div class="step-indicator__label">Listo</div>
+        </div>
+    </div>
+
+    <!-- Resumen de la operación -->
+    <div class="info-box">
+        <span class="info-box__icon">💳</span>
+        <div>
+            Recarga de <strong>S/@Model.Monto</strong> a
+            <strong>@Model.NumeroCelular</strong>
+            (@Model.OperadorNombre)
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card__title">Ingresa tu Clave Online</div>
+
+        @if (!ModelState.IsValid && ModelState.ErrorCount > 0)
+        {
+            <div class="alert alert-error" role="alert">
+                <span class="alert-icon">⚠️</span>
+                <div>
+                    @foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            </div>
+        }
+
+        <form method="post" novalidate id="form-paso3">
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label class="form-label" for="clave-input">
+                    Clave online <span class="required">*</span>
+                </label>
+
+                <!-- Campo PIN con 6 cajas individuales visibles -->
+                <div class="pin-boxes" id="pin-boxes" aria-label="Ingresa tu clave de 6 dígitos">
+                    @for (int i = 0; i < 6; i++)
+                    {
+                        <div class="pin-box" id="pin-box-@i" aria-hidden="true">·</div>
+                    }
+                </div>
+
+                <!-- Input oculto real que acumula el valor -->
+                <input id="clave-input"
+                       type="password"
+                       name="ClaveOnline"
+                       value=""
+                       maxlength="6"
+                       inputmode="numeric"
+                       autocomplete="off"
+                       aria-label="Clave de 6 dígitos"
+                       class="pin-input-hidden @(ModelState["ClaveOnline"]?.Errors.Any() == true ? "is-invalid" : "")"
+                       required />
+
+                @if (ModelState["ClaveOnline"]?.Errors.Any() == true)
+                {
+                    <div class="form-error" id="clave-error">
+                        @ModelState["ClaveOnline"]!.Errors.First().ErrorMessage
+                    </div>
+                }
+
+                <!-- Contador de dígitos -->
+                <div class="pin-counter" id="pin-counter">
+                    <span id="pin-count">0</span>/6 dígitos ingresados
+                </div>
+
+                <!-- Hint simulación -->
+                <div class="pin-sim-hint">
+                    🧪 <strong>Entorno de simulación</strong> — Clave de prueba:
+                    <code id="hint-code">123456</code>
+                    <button type="button" id="btn-usar-clave" class="btn-hint-use">Usar esta clave</button>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit"
+                        class="btn btn-primary"
+                        id="btn-confirmar"
+                        disabled>
+                    <span id="btn-text">🔒 Ingresa los 6 dígitos</span>
+                </button>
+                <a href="/Recarga/Paso2" class="btn btn-secondary" id="btn-atras-paso3">← Atrás</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Overlay de procesamiento y éxito -->
+    <div id="processing-overlay" class="processing-overlay">
+        <div id="processing-spinner" class="spinner-ring"></div>
+        <div id="processing-checkmark" class="success-checkmark-wrapper" style="display: none;">
+            <svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+        </div>
+        <div id="processing-title" class="processing-text">Procesando recarga...</div>
+        <div id="processing-desc" class="processing-subtext">Por favor, no cierres la aplicación</div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    const input   = document.getElementById('clave-input');
+    const boxes   = Array.from(document.querySelectorAll('.pin-box'));
+    const counter = document.getElementById('pin-count');
+    const btnConfirmar = document.getElementById('btn-confirmar');
+    const btnText = document.getElementById('btn-text');
+    const btnUsarClave = document.getElementById('btn-usar-clave');
+
+    function actualizarUI() {
+        const val = input.value;
+        const len = val.length;
+
+        // Actualizar cada caja
+        boxes.forEach((box, i) => {
+            if (i < len) {
+                box.textContent = '●';
+                box.classList.add('pin-box--filled');
+                box.classList.remove('pin-box--active');
+            } else if (i === len) {
+                box.textContent = '·';
+                box.classList.add('pin-box--active');
+                box.classList.remove('pin-box--filled');
+            } else {
+                box.textContent = '·';
+                box.classList.remove('pin-box--filled', 'pin-box--active');
+            }
+        });
+
+        // Contador
+        counter.textContent = len;
+
+        // Botón: habilitar solo con exactamente 6 dígitos
+        if (len === 6) {
+            btnConfirmar.disabled = false;
+            btnText.textContent = '✓ Confirmar Recarga';
+            btnConfirmar.classList.remove('btn-primary--locked');
+        } else {
+            btnConfirmar.disabled = true;
+            btnText.textContent = len === 0
+                ? '🔒 Ingresa los 6 dígitos'
+                : `🔒 Faltan ${6 - len} dígito${6 - len !== 1 ? 's' : ''}`;
+        }
+    }
+
+    // Solo dígitos numéricos
+    input.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '').slice(0, 6);
+        actualizarUI();
+    });
+
+    input.addEventListener('keypress', function (e) {
+        if (!/[0-9]/.test(e.key)) e.preventDefault();
+    });
+
+    // Click en las cajas → enfocar el input oculto
+    document.getElementById('pin-boxes').addEventListener('click', function () {
+        input.focus();
+    });
+
+    // Overlay elements
+    const overlay = document.getElementById('processing-overlay');
+    const spinner = document.getElementById('processing-spinner');
+    const checkmark = document.getElementById('processing-checkmark');
+    const procTitle = document.getElementById('processing-title');
+    const procDesc = document.getElementById('processing-desc');
+    const form = document.getElementById('form-paso3');
+
+    let isSubmitting = false;
+
+    form.addEventListener('submit', function (e) {
+        if (input.value.length === 6) {
+            if (isSubmitting) return;
+            
+            e.preventDefault();
+            isSubmitting = true;
+
+            btnConfirmar.disabled = true;
+            const btnAtras = document.getElementById('btn-atras-paso3');
+            if (btnAtras) btnAtras.style.pointerEvents = 'none';
+
+            overlay.classList.add('active');
+
+            if (input.value === '123456') {
+                procTitle.textContent = 'Procesando recarga...';
+                procDesc.textContent = 'Validando credenciales bancarias';
+                spinner.style.display = 'block';
+                checkmark.style.display = 'none';
+
+                setTimeout(() => {
+                    spinner.style.display = 'none';
+                    checkmark.style.display = 'flex';
+                    procTitle.textContent = '¡Transacción Exitosa!';
+                    procTitle.style.color = 'var(--color-accent)';
+                    procDesc.textContent = 'Generando constancia de pago...';
+
+                    setTimeout(() => {
+                        form.submit();
+                    }, 1200);
+                }, 1500);
+            } else {
+                procTitle.textContent = 'Validando clave...';
+                procDesc.textContent = 'Conectando con el servidor de seguridad';
+                spinner.style.display = 'block';
+                checkmark.style.display = 'none';
+
+                setTimeout(() => {
+                    form.submit();
+                }, 1200);
+            }
+        } else {
+            e.preventDefault();
+        }
+    });
+
+    // Botón "Usar esta clave" autocompleta 123456
+    btnUsarClave.addEventListener('click', function () {
+        input.value = '123456';
+        actualizarUI();
+        input.focus();
+    });
+
+    // Inicializar estado al cargar (útil si el form vuelve por error)
+    actualizarUI();
+})();
+</script>
+}

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace BancoArboleda.Pages.Recarga;
+namespace BancoArboleda.Frontend.Recarga;
 
 public class ConfirmacionModel : PageModel
 {
