@@ -1,0 +1,52 @@
+@page
+@model BancoArboleda.Pages.IndexModel
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="hero">
+    <h1>¡Bienvenido a BancoArboleda!</h1>
+    <p>Tu banco digital de confianza – rápido, seguro y fácil</p>
+</div>
+
+<div class="page-wrapper">
+    <div class="card">
+        <div class="card__title">¿Qué deseas hacer hoy?</div>
+        <div class="option-grid">
+            <a href="/Recarga/Paso1" class="option-card" id="btn-recarga">
+                <div class="option-card__icon">📱</div>
+                <div class="option-card__body">
+                    <h3>Recargar Celular</h3>
+                    <p>Recarga tu saldo móvil al instante</p>
+                </div>
+                <span class="option-card__arrow">›</span>
+            </a>
+
+            <a href="/Historial" class="option-card" id="btn-historial">
+                <div class="option-card__icon">📋</div>
+                <div class="option-card__body">
+                    <h3>Ver Historial</h3>
+                    <p>Últimas 10 transacciones realizadas</p>
+                </div>
+                <span class="option-card__arrow">›</span>
+            </a>
+
+            <div class="option-card" id="btn-saldo" style="opacity:.55; cursor:not-allowed;">
+                <div class="option-card__icon">💰</div>
+                <div class="option-card__body">
+                    <h3>Consultar Saldo</h3>
+                    <p>Próximamente disponible</p>
+                </div>
+                <span class="option-card__arrow">›</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-box" style="margin-top:1.25rem">
+        <span class="info-box__icon">ℹ️</span>
+        <div>
+            <strong>Horario de operaciones:</strong> Las 24 horas del día, los 7 días de la semana.
+            Tus recargas se procesan de forma inmediata.
+        </div>
+    </div>
+</div>

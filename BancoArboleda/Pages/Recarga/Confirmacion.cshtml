@@ -1,0 +1,60 @@
+@page
+@model BancoArboleda.Pages.Recarga.ConfirmacionModel
+@{
+    ViewData["Title"] = "Recarga Exitosa";
+}
+
+<div class="page-wrapper">
+    <div class="card" style="margin-top:2rem;">
+        <div class="confirm-hero">
+            <div class="confirm-checkmark">✓</div>
+            <h2>¡Recarga realizada con éxito!</h2>
+            <p>Tu saldo fue recargado de manera instantánea</p>
+        </div>
+
+        <div class="alert alert-success" style="margin-top:1rem;">
+            <span class="alert-icon">🎉</span>
+            <span>La recarga se procesó correctamente. El saldo ya está disponible en tu celular.</span>
+        </div>
+
+        <ul class="detail-list">
+            <li>
+                <span class="detail-list__label">Número recargado</span>
+                <span class="detail-list__value">@Model.NumeroCelular</span>
+            </li>
+            <li>
+                <span class="detail-list__label">Operador</span>
+                <span class="detail-list__value">@Model.OperadorNombre</span>
+            </li>
+            <li>
+                <span class="detail-list__label">Monto recargado</span>
+                <span class="detail-list__value" style="font-size:1.2rem;color:var(--color-primary-dark);">
+                    S/ @Model.Monto
+                </span>
+            </li>
+            <li>
+                <span class="detail-list__label">Fecha y hora</span>
+                <span class="detail-list__value">@Model.Fecha</span>
+            </li>
+            <li>
+                <span class="detail-list__label">Estado</span>
+                <span class="detail-list__value">
+                    <span class="badge badge-success">✓ Simulado</span>
+                </span>
+            </li>
+            <li>
+                <span class="detail-list__label">Código de operación</span>
+                <span class="detail-list__value mono">@Model.TransaccionId</span>
+            </li>
+        </ul>
+
+        <div class="btn-group" style="margin-top:1.5rem;">
+            <a href="/" class="btn btn-primary" id="btn-volver-inicio">
+                🏠 Volver al Inicio
+            </a>
+            <a href="/Historial" class="btn btn-secondary" id="btn-ver-historial">
+                Ver Historial
+            </a>
+        </div>
+    </div>
+</div>

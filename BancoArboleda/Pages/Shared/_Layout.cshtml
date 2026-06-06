@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="BancoArboleda - Banco digital confiable para recargas y pagos móviles en Perú." />
+    <title>@ViewData["Title"] – BancoArboleda</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="site-header__inner">
+            <a href="/" class="site-logo">
+                <div class="site-logo__icon">🌳</div>
+                <div>
+                    <div class="site-logo__name">BancoArboleda</div>
+                    <div class="site-logo__tag">Banco Digital</div>
+                </div>
+            </a>
+            <nav class="site-nav">
+                <a href="/" id="nav-home">Inicio</a>
+                <a href="/Historial" id="nav-historial">Historial</a>
+            </nav>
+        </div>
+    </header>
+
+    @RenderBody()
+
+    <footer class="site-footer">
+        <p>© @DateTime.Now.Year BancoArboleda · Banco Digital de confianza</p>
+        <p style="margin-top:.25rem">🔒 Transacciones seguras y cifradas</p>
+    </footer>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        // Highlight active nav link
+        const path = window.location.pathname.toLowerCase();
+        if (path === '/' || path === '/index') document.getElementById('nav-home')?.classList.add('active');
+        else if (path.startsWith('/historial')) document.getElementById('nav-historial')?.classList.add('active');
+    </script>
+</body>
+</html>
