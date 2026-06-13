@@ -1,0 +1,126 @@
+@page "/historial"
+@inject RecargaService RecargaService
+
+<PageTitle>Historial de Transacciones – BancoArboleda</PageTitle>
+
+<div class="page-wrapper page-wrapper--wide" style="max-width:900px; padding-top:1.5rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; flex-wrap:wrap; gap:.75rem;">
+        <div>
+            <h1 style="font-size:1.4rem; font-weight:800; color:var(--color-primary-dark);">
+                📋 Historial de Transacciones
+            </h1>
+            <p style="color:var(--color-text-muted); font-size:.875rem; margin-top:.2rem;">
+                Últimas 10 operaciones realizadas
+            </p>
+        </div>
+        <a href="recarga/paso1" class="btn btn-primary" id="btn-nueva-recarga"
+           style="width:auto; padding:.7rem 1.25rem; pointer-events: @(apiConnectionError ? "none" : "auto"); opacity: @(apiConnectionError ? "0.5" : "1");">
+            + Nueva Recarga
+        </a>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="card" style="text-align:center; padding:3rem 1.5rem;">
+            <div style="font-size:2rem; margin-bottom:1rem;" class="loading-spinner">⏳</div>
+            <p style="color:var(--color-text-muted);">Cargando transacciones...</p>
+        </div>
+    }
+    else if (apiConnectionError)
+    {
+        <div class="card" style="text-align:center; padding:3rem 1.5rem;">
+            <div style="font-size:3rem; margin-bottom:1rem;">⚠️</div>
+            <h3 style="color:var(--color-error); margin-bottom:.5rem;">Servidor de Backend Fuera de Línea</h3>
+            <p style="color:var(--color-text-muted); margin-bottom:1.5rem;">
+                No se pudo recuperar el historial de transacciones porque el backend no está respondiendo.
+                Solo se encuentra activo el Frontend de la aplicación.
+            </p>
+            <a href="" class="btn btn-secondary" style="width:auto; display:inline-flex;">
+                Volver al Inicio
+            </a>
+        </div>
+    }
+    else if (!transacciones.Any())
+    {
+        <div class="card" style="text-align:center; padding:3rem 1.5rem;">
+            <div style="font-size:3rem; margin-bottom:1rem;">📭</div>
+            <h3 style="color:var(--color-primary-dark); margin-bottom:.5rem;">Sin transacciones aún</h3>
+            <p style="color:var(--color-text-muted); margin-bottom:1.5rem;">
+                Realiza tu primera recarga para verla aquí.
+            </p>
+            <a href="recarga/paso1" class="btn btn-primary" style="width:auto; display:inline-flex;"
+               id="btn-primera-recarga">
+                Realizar primera recarga
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrapper">
+            <table class="data-table" id="tabla-historial">
+                <thead>
+                    <tr>
+                        <th>Fecha y Hora</th>
+                        <th>Operador</th>
+                        <th>Número</th>
+                        <th>Monto</th>
+                        <th>Resultado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tx in transacciones)
+                    {
+                        <tr>
+                            <td class="td-fecha">@tx.Fecha</td>
+                            <td>
+                                <strong>@tx.OperadorNombre</strong>
+                            </td>
+                            <td>@tx.NumeroCelular</td>
+                            <td class="td-monto">S/ @tx.Monto.ToString("F2")</td>
+                            <td>
+                                @if (tx.Estado == "simulado")
+                                {
+                                    <span class="badge badge-success">✓ Exitosa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-success">@tx.Estado</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div style="text-align:right; margin-top:.75rem; font-size:.8rem; color:var(--color-text-muted);">
+            Mostrando @transacciones.Count transaccion@(transacciones.Count != 1 ? "es" : "")
+        </div>
+    }
+</div>
+
+@code {
+    private IReadOnlyList<Transaccion> transacciones = Array.Empty<Transaccion>();
+    private bool isLoading = true;
+    private bool apiConnectionError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isLoading = true;
+            apiConnectionError = false;
+            transacciones = await RecargaService.GetHistorialAsync();
+        }
+        catch (Exception ex)
+        {
+            apiConnectionError = true;
+            Console.WriteLine($"Error al cargar el historial: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
+

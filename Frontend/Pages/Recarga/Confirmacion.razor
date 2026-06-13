@@ -1,0 +1,92 @@
+@page "/recarga/confirmacion"
+@inject NavigationManager NavigationManager
+@inject RecargaFlowState FlowState
+
+<PageTitle>Recarga Exitosa – BancoArboleda</PageTitle>
+
+<div class="page-wrapper">
+    <div class="card" style="margin-top:2rem;">
+        <div class="confirm-hero">
+            <div class="success-checkmark-wrapper" style="margin: 0 auto 1.5rem;">
+                <svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                </svg>
+            </div>
+            <h2>¡Recarga realizada con éxito!</h2>
+            <p>Tu saldo fue recargado de manera instantánea</p>
+        </div>
+
+        <div class="alert alert-success" style="margin-top:1rem;">
+            <span class="alert-icon">🎉</span>
+            <span>La recarga se procesó correctamente. El saldo ya está disponible en tu celular.</span>
+        </div>
+
+        <ul class="detail-list">
+            <li>
+                <span class="detail-list__label">Número recargado</span>
+                <span class="detail-list__value">@numeroCelular</span>
+            </li>
+            <li>
+                <span class="detail-list__label">Operador</span>
+                <span class="detail-list__value">@operadorNombre</span>
+            </li>
+            <li>
+                <span class="detail-list__label">Monto recargado</span>
+                <span class="detail-list__value" style="font-size:1.2rem;color:var(--color-primary-dark);">
+                    S/ @monto
+                </span>
+            </li>
+            <li>
+                <span class="detail-list__label">Fecha y hora</span>
+                <span class="detail-list__value">@fecha</span>
+            </li>
+            <li>
+                <span class="detail-list__label">Estado</span>
+                <span class="detail-list__value">
+                    <span class="badge badge-success">✓ Simulado</span>
+                </span>
+            </li>
+            <li>
+                <span class="detail-list__label">Código de operación</span>
+                <span class="detail-list__value mono">@transaccionId</span>
+            </li>
+        </ul>
+
+        <div class="btn-group" style="margin-top:1.5rem;">
+            <a href="" class="btn btn-primary" id="btn-volver-inicio">
+                🏠 Volver al Inicio
+            </a>
+            <a href="historial" class="btn btn-secondary" id="btn-ver-historial">
+                Ver Historial
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string numeroCelular = string.Empty;
+    private string operadorNombre = string.Empty;
+    private string monto = string.Empty;
+    private string fecha = string.Empty;
+    private string transaccionId = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        if (!FlowState.TieneConfirmacion())
+        {
+            NavigationManager.NavigateTo("");
+            return;
+        }
+
+        // Copiar datos del estado para mostrarlos
+        numeroCelular = FlowState.NumeroCelular;
+        operadorNombre = FlowState.OperadorNombre;
+        monto = FlowState.Monto?.ToString("F2") ?? "";
+        fecha = FlowState.ConfirmacionFecha;
+        transaccionId = FlowState.ConfirmacionId;
+
+        // Limpiar el estado para futuras recargas
+        FlowState.Reset();
+    }
+}

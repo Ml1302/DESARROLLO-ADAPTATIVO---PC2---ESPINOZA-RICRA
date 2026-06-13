@@ -1,0 +1,24 @@
+@inherits LayoutComponentBase
+
+<header class="site-header">
+    <div class="site-header__inner">
+        <NavLink href="" Match="NavLinkMatch.All" class="site-logo">
+            <div class="site-logo__icon">🌳</div>
+            <div>
+                <div class="site-logo__name">BancoArboleda</div>
+                <div class="site-logo__tag">Banco Digital</div>
+            </div>
+        </NavLink>
+        <nav class="site-nav">
+            <NavLink href="" Match="NavLinkMatch.All" ActiveClass="active">Inicio</NavLink>
+            <NavLink href="historial" ActiveClass="active">Historial</NavLink>
+        </nav>
+    </div>
+</header>
+
+@Body
+
+<footer class="site-footer">
+    <p>© @DateTime.Today.Year BancoArboleda · Banco Digital de confianza</p>
+    <p style="margin-top:.25rem">🔒 Transacciones seguras y cifradas</p>
+</footer>

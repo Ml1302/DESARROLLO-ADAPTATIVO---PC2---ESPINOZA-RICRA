@@ -1,0 +1,155 @@
+@page "/recarga/paso2"
+@inject NavigationManager NavigationManager
+@inject RecargaFlowState FlowState
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Recarga – Paso 2</PageTitle>
+
+<div class="page-wrapper">
+    <!-- Indicador de pasos -->
+    <div class="step-indicator" style="gap:.5rem;">
+        <div class="step-indicator__item done">
+            <div class="step-indicator__dot">✓</div>
+            <div class="step-indicator__label">Destino</div>
+        </div>
+        <div class="step-connector done"></div>
+        <div class="step-indicator__item active">
+            <div class="step-indicator__dot">2</div>
+            <div class="step-indicator__label">Monto</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-indicator__item">
+            <div class="step-indicator__dot">3</div>
+            <div class="step-indicator__label">Clave</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-indicator__item">
+            <div class="step-indicator__dot">✓</div>
+            <div class="step-indicator__label">Listo</div>
+        </div>
+    </div>
+
+    <!-- Resumen -->
+    <div class="info-box">
+        <span class="info-box__icon">📱</span>
+        <div>
+            Recargando <strong>@FlowState.NumeroCelular</strong>
+            con <strong>@FlowState.OperadorNombre</strong>
+            · Rango: S/@FlowState.MontoMin.ToString("F2") – S/@FlowState.MontoMax.ToString("F2")
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card__title">Selecciona el Monto</div>
+
+        @if (!string.IsNullOrEmpty(errorMonto))
+        {
+            <div class="alert alert-error" role="alert">
+                <span class="alert-icon">⚠️</span>
+                <span>@errorMonto</span>
+            </div>
+        }
+
+        <EditForm Model="this" OnValidSubmit="OnValidSubmitAsync" novalidate>
+            <DataAnnotationsValidator />
+
+            <!-- Botones rápidos -->
+            <div class="form-group">
+                <label class="form-label">Montos rápidos</label>
+                <div class="monto-grid">
+                    @foreach (var m in new[] { 5, 10, 20, 50 })
+                    {
+                        <button type="button"
+                                class="btn-monto quick-monto @(Monto == m ? "selected" : "")"
+                                @onclick="() => SeleccionarMonto(m)"
+                                id="btn-monto-@m">
+                            S/@m
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="divider">o ingresa otro monto</div>
+
+            <div class="form-group">
+                <label class="form-label" for="monto-libre">
+                    Monto libre (S/) <span class="required">*</span>
+                </label>
+                <InputNumber id="monto-libre"
+                             @bind-Value="Monto"
+                             class="form-control"
+                             placeholder="Ej: 15"
+                             min="@FlowState.MontoMin.ToString("F2")"
+                             max="@FlowState.MontoMax.ToString("F2")"
+                             step="any"
+                             inputmode="decimal"
+                             onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 46 || event.charCode == 44" />
+                <ValidationMessage For="@(() => Monto)" class="form-error" />
+                <div style="font-size:.78rem; color:var(--color-text-muted); margin-top:.35rem;">
+                    Mínimo: S/@FlowState.MontoMin.ToString("F2") · Máximo: S/@FlowState.MontoMax.ToString("F2")
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary" id="btn-siguiente-paso2">
+                    Continuar &rarr;
+                </button>
+                <a href="recarga/paso1" class="btn btn-secondary" id="btn-atras-paso2">← Atrás</a>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Required(ErrorMessage = "Debes ingresar un monto.")]
+    public decimal? Monto { get; set; }
+
+    private string? errorMonto;
+
+    protected override void OnInitialized()
+    {
+        if (!FlowState.TieneDatosPaso1())
+        {
+            NavigationManager.NavigateTo("recarga/paso1");
+            return;
+        }
+
+        // Cargar si ya había ingresado
+        Monto = FlowState.Monto;
+    }
+
+    private void SeleccionarMonto(decimal m)
+    {
+        Monto = m;
+        errorMonto = null;
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        errorMonto = null;
+
+        if (Monto == null)
+        {
+            errorMonto = "Debes ingresar un monto válido.";
+            return;
+        }
+
+        if (Monto < FlowState.MontoMin || Monto > FlowState.MontoMax)
+        {
+            errorMonto = $"El monto debe estar entre S/{FlowState.MontoMin:F2} y S/{FlowState.MontoMax:F2} para {FlowState.OperadorNombre}.";
+            return;
+        }
+
+        // Validar máximo un decimal (ej: 10.50)
+        if ((Monto.Value * 10) % 1 != 0)
+        {
+            errorMonto = "El monto solo puede tener como máximo un decimal (ej: S/10.50).";
+            return;
+        }
+
+        // Guardar estado y continuar
+        FlowState.Monto = Monto;
+        NavigationManager.NavigateTo("recarga/paso3");
+        await Task.CompletedTask;
+    }
+}

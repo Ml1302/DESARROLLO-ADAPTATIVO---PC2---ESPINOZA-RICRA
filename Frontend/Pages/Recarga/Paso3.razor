@@ -1,0 +1,256 @@
+@page "/recarga/paso3"
+@inject NavigationManager NavigationManager
+@inject RecargaFlowState FlowState
+@inject RecargaService RecargaService
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Recarga – Paso 3</PageTitle>
+
+<div class="page-wrapper">
+    <!-- Indicador de pasos -->
+    <div class="step-indicator" style="gap:.5rem;">
+        <div class="step-indicator__item done">
+            <div class="step-indicator__dot">✓</div>
+            <div class="step-indicator__label">Destino</div>
+        </div>
+        <div class="step-connector done"></div>
+        <div class="step-indicator__item done">
+            <div class="step-indicator__dot">✓</div>
+            <div class="step-indicator__label">Monto</div>
+        </div>
+        <div class="step-connector done"></div>
+        <div class="step-indicator__item active">
+            <div class="step-indicator__dot">3</div>
+            <div class="step-indicator__label">Clave</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step-indicator__item">
+            <div class="step-indicator__dot">✓</div>
+            <div class="step-indicator__label">Listo</div>
+        </div>
+    </div>
+
+    <!-- Resumen de la operación -->
+    <div class="info-box">
+        <span class="info-box__icon">💳</span>
+        <div>
+            Recarga de <strong>S/@(FlowState.Monto?.ToString("F2"))</strong> a
+            <strong>@FlowState.NumeroCelular</strong>
+            (@FlowState.OperadorNombre)
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card__title">Ingresa tu Clave Online</div>
+
+        @if (!string.IsNullOrEmpty(apiError))
+        {
+            <div class="alert alert-error" role="alert">
+                <span class="alert-icon">⚠️</span>
+                <div>@apiError</div>
+            </div>
+        }
+
+        <EditForm Model="this" OnValidSubmit="OnValidSubmitAsync" novalidate id="form-paso3">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label class="form-label" for="clave-input">
+                    Clave online <span class="required">*</span>
+                </label>
+
+                <!-- Campo PIN con 6 cajas individuales visibles -->
+                <div class="pin-boxes" id="pin-boxes" @onclick="FocusInput" aria-label="Ingresa tu clave de 6 dígitos">
+                    @for (int i = 0; i < 6; i++)
+                    {
+                        int index = i;
+                        string boxText = index < ClaveOnline.Length ? "●" : "·";
+                        string boxClass = index < ClaveOnline.Length ? "pin-box pin-box--filled" : (index == ClaveOnline.Length ? "pin-box pin-box--active" : "pin-box");
+                        <div class="@boxClass" aria-hidden="true">@boxText</div>
+                    }
+                </div>
+
+                <!-- Input oculto real que acumula el valor -->
+                <input @ref="claveInputRef"
+                       id="clave-input"
+                       type="password"
+                       @bind-value="ClaveOnline"
+                       @bind-value:event="oninput"
+                       maxlength="6"
+                       inputmode="numeric"
+                       autocomplete="off"
+                       aria-label="Clave de 6 dígitos"
+                       class="pin-input-hidden"
+                       onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                       required />
+
+                <!-- Contador de dígitos -->
+                <div class="pin-counter" id="pin-counter">
+                    <span>@ClaveOnline.Length</span>/6 dígitos ingresados
+                </div>
+
+                <!-- Hint simulación -->
+                <div class="pin-sim-hint">
+                    🧪 <strong>Entorno de simulación</strong> — Clave de prueba:
+                    <code>123456</code>
+                    <button type="button" @onclick="UsarClavePredefinida" class="btn-hint-use">Usar esta clave</button>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit"
+                        class="btn btn-primary"
+                        id="btn-confirmar"
+                        disabled="@(ClaveOnline.Length != 6)">
+                    <span>@BotonTexto</span>
+                </button>
+                <a href="recarga/paso2" class="btn btn-secondary" id="btn-atras-paso3">← Atrás</a>
+            </div>
+        </EditForm>
+    </div>
+
+    <!-- Overlay de procesamiento y éxito -->
+    <div class="processing-overlay @(showOverlay ? "active" : "")">
+        <div class="spinner-ring" style="display: @(showCheckmark ? "none" : "block");"></div>
+        <div class="success-checkmark-wrapper" style="display: @(showCheckmark ? "flex" : "none");">
+            <svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+        </div>
+        <div class="processing-text" style="color: @(showCheckmark ? "var(--color-accent)" : "inherit");">@overlayTitle</div>
+        <div class="processing-subtext">@overlayDesc</div>
+    </div>
+</div>
+
+@code {
+    private ElementReference claveInputRef;
+    private string claveOnline = string.Empty;
+
+    [Required(ErrorMessage = "La clave es obligatoria.")]
+    [RegularExpression(@"^\d{6}$", ErrorMessage = "La clave debe tener exactamente 6 dígitos numéricos.")]
+    public string ClaveOnline
+    {
+        get => claveOnline;
+        set => claveOnline = new string(value.Where(char.IsDigit).Take(6).ToArray());
+    }
+
+    private string BotonTexto
+    {
+        get
+        {
+            int len = ClaveOnline.Length;
+            if (len == 6) return "✓ Confirmar Recarga";
+            if (len == 0) return "🔒 Ingresa los 6 dígitos";
+            return $"🔒 Faltan {6 - len} dígito{(6 - len != 1 ? "s" : "")}";
+        }
+    }
+
+    // Estado del overlay
+    private bool showOverlay = false;
+    private bool showCheckmark = false;
+    private string overlayTitle = string.Empty;
+    private string overlayDesc = string.Empty;
+    private string? apiError;
+
+    protected override void OnInitialized()
+    {
+        if (!FlowState.TieneDatosPaso2())
+        {
+            NavigationManager.NavigateTo("recarga/paso2");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await FocusInput();
+        }
+    }
+
+    private async Task FocusInput()
+    {
+        try
+        {
+            await claveInputRef.FocusAsync();
+        }
+        catch { }
+    }
+
+    private async Task UsarClavePredefinida()
+    {
+        ClaveOnline = "123456";
+        await FocusInput();
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (ClaveOnline.Length != 6) return;
+
+        apiError = null;
+
+        if (ClaveOnline != "123456")
+        {
+            // Simulación de error de clave
+            showOverlay = true;
+            showCheckmark = false;
+            overlayTitle = "Validando clave...";
+            overlayDesc = "Conectando con el servidor de seguridad";
+            StateHasChanged();
+
+            await Task.Delay(1200);
+
+            showOverlay = false;
+            apiError = "La clave online ingresada es incorrecta.";
+            StateHasChanged();
+            return;
+        }
+
+        // Caso exitoso
+        showOverlay = true;
+        showCheckmark = false;
+        overlayTitle = "Procesando recarga...";
+        overlayDesc = "Validando credenciales bancarias";
+        StateHasChanged();
+
+        await Task.Delay(1500);
+
+        showCheckmark = true;
+        overlayTitle = "¡Transacción Exitosa!";
+        overlayDesc = "Generando constancia de pago...";
+        StateHasChanged();
+
+        await Task.Delay(1200);
+
+        var transaccion = new Transaccion
+        {
+            Id = Guid.NewGuid().ToString(),
+            NumeroCelular = FlowState.NumeroCelular,
+            OperadorId = FlowState.OperadorId ?? 0,
+            OperadorNombre = FlowState.OperadorNombre,
+            Monto = FlowState.Monto ?? 0,
+            Fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+            Estado = "simulado"
+        };
+
+        try
+        {
+            // Llamado a la Web API
+            await RecargaService.InsertarAsync(transaccion);
+
+            // Guardar en FlowState para mostrar recibo
+            FlowState.ConfirmacionId = transaccion.Id;
+            FlowState.ConfirmacionFecha = transaccion.Fecha;
+
+            showOverlay = false;
+            NavigationManager.NavigateTo("recarga/confirmacion");
+        }
+        catch (Exception ex)
+        {
+            showOverlay = false;
+            apiError = $"Error al conectar con la API: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+}
